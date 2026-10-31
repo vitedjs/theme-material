@@ -42,9 +42,11 @@
   },
   "scripts": {
     "build": "tsdown",
+    "docs:build": "vited build",
+    "docs:dev": "vited dev",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
-    "lint": "oxlint && stylelint --allow-empty-input \"**/*.css\"",
+    "lint": "oxlint && stylelint --allow-empty-input \"src/**/*.css\"",
     "prepare": "husky",
     "test": "vitest run",
     "test:watch": "vitest"

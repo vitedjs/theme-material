@@ -1,0 +1,72 @@
+name: Pages
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  pages: write
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+defaults:
+  run:
+    working-directory: theme-bootstrap
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: theme-bootstrap
+      # @vited/cli and @vited/core are linked from sibling directories
+      - uses: actions/checkout@v6
+        with:
+          repository: vitedjs/cli
+          path: cli
+      - uses: actions/checkout@v6
+        with:
+          repository: vitedjs/core
+          path: core
+      # @vited/core links @vited/theme-mantine for its own docs
+      - uses: actions/checkout@v6
+        with:
+          repository: vitedjs/theme-mantine
+          path: theme-mantine
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.16.1
+      - uses: actions/configure-pages@v5
+      - run: pnpm install
+        working-directory: cli
+      - run: pnpm build
+        working-directory: cli
+      - run: pnpm install
+        working-directory: core
+      - run: pnpm approve-builds @swc/core esbuild
+        working-directory: core
+      - run: pnpm build
+        working-directory: core
+      - run: pnpm install
+      - run: pnpm build
+      - run: pnpm run docs:build
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./theme-bootstrap/docs_dist
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
