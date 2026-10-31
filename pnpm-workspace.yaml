@@ -1,0 +1,2 @@
+minimumReleaseAgeExclude:
+  - oxlint-config-recommended@1.2.1
