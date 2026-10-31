@@ -49,6 +49,7 @@ import parse, { Element as HtmlElement, type DOMNode } from 'html-react-parser';
 import React, {
   type ComponentType,
   type KeyboardEvent,
+  type MouseEvent,
   type ReactElement,
   type ReactNode,
 } from 'react';
@@ -211,6 +212,9 @@ function buildTheme(mode: ColorScheme) {
         styleOverrides: {
           '.vited-material-content': {
             '& img': { maxWidth: '100%', height: 'auto' },
+            '& a': {
+              color: mode === 'dark' ? '#90caf9' : '#1976d2',
+            },
             '& :not(pre) > code': {
               padding: '0.125rem 0.375rem',
               fontSize: '0.875em',
@@ -246,6 +250,7 @@ function ThemeApp({
   menu,
   searchIndex = [],
   packageJSON = {},
+  basePath = '',
   colorScheme,
   onToggleColorScheme,
 }: VitedThemeProps & {
@@ -326,13 +331,38 @@ function ThemeApp({
     navigate(`${nextRoute.pathname}${url.search}${url.hash}`);
   }
 
+  function handleContentClick(event: MouseEvent<HTMLElement>) {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+    const anchor = (event.target as HTMLElement).closest('a');
+    if (!anchor || anchor.target === '_blank' || anchor.hasAttribute('download')) return;
+    const href = anchor.getAttribute('href');
+    if (!href || href.startsWith('#')) return;
+    const url = new globalThis.URL(anchor.href, globalThis.location.href);
+    if (url.origin !== globalThis.location.origin) return;
+    const routePath = stripBasePath(url.pathname, basePath);
+    if (routeIndex[routePath] === undefined) return;
+    event.preventDefault();
+    navigate(`${routePath}${url.search}${url.hash}`);
+  }
+
   const drawerContent = (
     <Box sx={{ width: 280 }} role='presentation'>
-      <Toolbar>
-        <Typography variant='overline' color='text.secondary'>
-          {t('navigation')}
-        </Typography>
-      </Toolbar>
+      <Typography
+        variant='overline'
+        color='text.secondary'
+        sx={{ display: 'block', px: 2, pt: 2, pb: 1 }}
+      >
+        {t('navigation')}
+      </Typography>
       <Divider />
       <List component='nav' aria-label={t('navigation')} sx={{ py: 1 }}>
         {navigation}
@@ -341,10 +371,10 @@ function ThemeApp({
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <CssBaseline />
       <AppBar position='sticky' color='default' elevation={1}>
-        <Toolbar sx={{ gap: 1, flexWrap: 'nowrap' }}>
+        <Toolbar sx={{ gap: { xs: 0.5, sm: 1 }, flexWrap: 'nowrap' }}>
           {showNavigation ? (
             <IconButton
               edge='start'
@@ -359,7 +389,7 @@ function ThemeApp({
           {favicon ? (
             <Box component='img' src={favicon} alt='' sx={{ width: 24, height: 24 }} />
           ) : undefined}
-          <Stack spacing={0} sx={{ minWidth: 0, flex: '0 1 auto' }}>
+          <Stack spacing={0} sx={{ minWidth: 0, flex: '0 1 auto', overflow: 'hidden' }}>
             <Typography variant='subtitle1' fontWeight={700} noWrap>
               {title || 'Documentation'}
             </Typography>
@@ -378,31 +408,42 @@ function ThemeApp({
             direction='row'
             spacing={0.5}
             alignItems='center'
-            sx={{ ml: 'auto', flexWrap: 'nowrap' }}
+            sx={{ ml: 'auto', flexWrap: 'nowrap', flexShrink: 0 }}
           >
             {searchIndex.length > 0 ? (
-              <Button
-                variant='outlined'
-                size='small'
-                startIcon={<SearchIcon fontSize='small' />}
-                onClick={() => setSearchOpened(true)}
-                sx={{
-                  justifyContent: 'space-between',
-                  width: { xs: 180, sm: 250 },
-                  textTransform: 'none',
-                  fontWeight: 400,
-                  color: 'text.secondary',
-                }}
-                aria-label={`${t('search')} ${getSearchShortcut()}`}
-              >
-                <Typography variant='body2'>{t('search')}</Typography>
-                <Chip
-                  label={getSearchShortcut()}
-                  size='small'
+              <>
+                <IconButton
+                  color='inherit'
+                  onClick={() => setSearchOpened(true)}
+                  aria-label={`${t('search')} ${getSearchShortcut()}`}
+                  sx={{ display: { xs: 'inline-flex', sm: 'none' } }}
+                >
+                  <SearchIcon />
+                </IconButton>
+                <Button
                   variant='outlined'
-                  sx={{ height: 20, fontSize: 11 }}
-                />
-              </Button>
+                  size='small'
+                  startIcon={<SearchIcon fontSize='small' />}
+                  onClick={() => setSearchOpened(true)}
+                  sx={{
+                    display: { xs: 'none', sm: 'inline-flex' },
+                    justifyContent: 'space-between',
+                    width: { sm: 180, md: 250 },
+                    textTransform: 'none',
+                    fontWeight: 400,
+                    color: 'text.secondary',
+                  }}
+                  aria-label={`${t('search')} ${getSearchShortcut()}`}
+                >
+                  <Typography variant='body2'>{t('search')}</Typography>
+                  <Chip
+                    label={getSearchShortcut()}
+                    size='small'
+                    variant='outlined'
+                    sx={{ height: 20, fontSize: 11 }}
+                  />
+                </Button>
+              </>
             ) : undefined}
             {projectLinks.github ? (
               <Tooltip title={t('github')}>
@@ -413,6 +454,7 @@ function ThemeApp({
                   rel='noreferrer'
                   color='inherit'
                   aria-label={t('github')}
+                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
                 >
                   <GitHubIcon />
                 </IconButton>
@@ -427,19 +469,20 @@ function ThemeApp({
                   rel='noreferrer'
                   color='inherit'
                   aria-label={t('donate')}
+                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
                 >
                   <FavoriteIcon sx={{ color: 'error.main' }} />
                 </IconButton>
               </Tooltip>
             ) : undefined}
             {locales.length > 1 ? (
-              <FormControl size='small' sx={{ minWidth: 120 }}>
+              <FormControl size='small' sx={{ minWidth: 0, width: { xs: 112, sm: 132 } }}>
                 <Select
                   value={locale}
                   onChange={(event) => changeLocale(event.target.value)}
                   aria-label={t('language')}
                   startAdornment={
-                    <InputAdornment position='start'>
+                    <InputAdornment position='start' sx={{ display: { xs: 'none', sm: 'flex' } }}>
                       <LanguageIcon fontSize='small' />
                     </InputAdornment>
                   }
@@ -457,23 +500,42 @@ function ThemeApp({
         </Toolbar>
       </AppBar>
 
-      {showNavigation && isDesktop ? (
-        <Box
-          component='aside'
-          sx={{
-            width: 280,
-            flexShrink: 0,
-            borderRight: 1,
-            borderColor: 'divider',
-            position: 'sticky',
-            top: 0,
-            height: '100vh',
-            overflowY: 'auto',
-          }}
-        >
-          {drawerContent}
+      <Box sx={{ display: 'flex', flexGrow: 1, minHeight: 0 }}>
+        {showNavigation && isDesktop ? (
+          <Box
+            component='aside'
+            sx={{
+              width: 280,
+              flexShrink: 0,
+              borderRight: 1,
+              borderColor: 'divider',
+            }}
+          >
+            <Box
+              sx={{
+                position: 'sticky',
+                top: 64,
+                height: 'calc(100vh - 64px)',
+                overflowY: 'auto',
+              }}
+            >
+              {drawerContent}
+            </Box>
+          </Box>
+        ) : undefined}
+
+        <Box component='main' sx={{ flexGrow: 1, minWidth: 0 }}>
+          <Container maxWidth='lg' sx={{ py: 3 }}>
+            {Content ? (
+              <Box className='vited-material-content' onClick={handleContentClick}>
+                <Content components={markdownComponents} />
+              </Box>
+            ) : (
+              <Typography color='text.secondary'>{t('noDocuments')}</Typography>
+            )}
+          </Container>
         </Box>
-      ) : undefined}
+      </Box>
 
       {showNavigation ? (
         <Drawer
@@ -486,18 +548,6 @@ function ThemeApp({
           {drawerContent}
         </Drawer>
       ) : undefined}
-
-      <Box component='main' sx={{ flexGrow: 1, minWidth: 0 }}>
-        <Container maxWidth='lg' sx={{ py: 3 }}>
-          {Content ? (
-            <Box className='vited-material-content'>
-              <Content components={markdownComponents} />
-            </Box>
-          ) : (
-            <Typography color='text.secondary'>{t('noDocuments')}</Typography>
-          )}
-        </Container>
-      </Box>
 
       {searchIndex.length > 0 ? (
         <SearchDialog
@@ -539,7 +589,6 @@ export function VitedTheme(props: VitedThemeProps): ReactElement {
   const theme = useMemo(() => buildTheme(mode), [mode]);
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
       <I18nextProvider i18n={themeI18n}>
         <Router base={props.basePath ?? ''}>
           <ThemeApp {...props} colorScheme={mode} onToggleColorScheme={toggleMode} />
@@ -890,6 +939,13 @@ function getSearchShortcut(): string {
 
 function humanize(value: string): string {
   return decodeURIComponent(value).replaceAll(/[-_]/g, ' ');
+}
+
+function stripBasePath(pathname: string, basePath: string): string {
+  const base = basePath.replace(/\/$/, '');
+  if (!base) return pathname;
+  if (pathname === base) return '/';
+  return pathname.startsWith(`${base}/`) ? pathname.slice(base.length) : pathname;
 }
 
 function MarkdownHtml({ html = '' }: MarkdownElementProps): ReactElement {

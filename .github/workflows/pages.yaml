@@ -13,14 +13,14 @@ concurrency:
   cancel-in-progress: false
 defaults:
   run:
-    working-directory: theme-bootstrap
+    working-directory: theme-material
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
-          path: theme-bootstrap
+          path: theme-material
       # @vited/cli and @vited/core are linked from sibling directories
       - uses: actions/checkout@v6
         with:
@@ -57,7 +57,7 @@ jobs:
       - run: pnpm run docs:build
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: ./theme-bootstrap/docs_dist
+          path: ./theme-material/docs_dist
   deploy:
     environment:
       name: github-pages
