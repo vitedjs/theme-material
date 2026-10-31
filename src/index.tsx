@@ -1,4 +1,5 @@
 import {
+  ArrowDropDown as ArrowDropDownIcon,
   Check as CheckIcon,
   Close as CloseIcon,
   ContentCopy as ContentCopyIcon,
@@ -15,6 +16,7 @@ import {
 import {
   AppBar,
   Box,
+  Button,
   ButtonBase,
   Collapse,
   Container,
@@ -24,15 +26,14 @@ import {
   DialogTitle,
   Divider,
   Drawer,
-  FormControl,
   IconButton,
   InputAdornment,
   List,
   ListItem,
   ListItemButton,
   ListItemText,
+  Menu,
   MenuItem,
-  Select,
   Stack,
   TextField,
   ThemeProvider,
@@ -272,6 +273,7 @@ function ThemeApp({
   const { t, i18n } = useTranslation();
   const [mobileOpened, setMobileOpened] = useState(false);
   const [searchOpened, setSearchOpened] = useState(false);
+  const [languageMenu, setLanguageMenu] = useState<HTMLElement>();
   const projectLinks = useMemo(() => getProjectLinks(packageJSON), [packageJSON]);
   const navigationPages = useMemo(
     () => pages.filter((item) => item.locale === locale),
@@ -481,24 +483,47 @@ function ThemeApp({
               </Tooltip>
             ) : undefined}
             {locales.length > 1 ? (
-              <FormControl size='small' sx={{ minWidth: 0, width: { xs: 112, sm: 132 } }}>
-                <Select
-                  value={locale}
-                  onChange={(event) => changeLocale(event.target.value)}
+              <>
+                <Button
+                  color='inherit'
                   aria-label={t('language')}
-                  startAdornment={
-                    <InputAdornment position='start' sx={{ display: { xs: 'none', sm: 'flex' } }}>
-                      <LanguageIcon fontSize='small' />
-                    </InputAdornment>
-                  }
+                  aria-haspopup='menu'
+                  aria-expanded={Boolean(languageMenu)}
+                  startIcon={<LanguageIcon fontSize='small' />}
+                  endIcon={<ArrowDropDownIcon />}
+                  onClick={(event) => setLanguageMenu(event.currentTarget)}
+                  sx={{
+                    minWidth: 0,
+                    px: { xs: 1, sm: 1.5 },
+                    borderRadius: '4px',
+                    fontWeight: 400,
+                    textTransform: 'none',
+                    '& .MuiButton-startIcon': { display: { xs: 'none', sm: 'inline-flex' } },
+                  }}
+                >
+                  {new Intl.DisplayNames([locale], { type: 'language' }).of(locale) ?? locale}
+                </Button>
+                <Menu
+                  anchorEl={languageMenu}
+                  open={Boolean(languageMenu)}
+                  onClose={() => setLanguageMenu(undefined)}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                 >
                   {locales.map((item) => (
-                    <MenuItem key={item} value={item}>
+                    <MenuItem
+                      key={item}
+                      selected={item === locale}
+                      onClick={() => {
+                        changeLocale(item);
+                        setLanguageMenu(undefined);
+                      }}
+                    >
                       {new Intl.DisplayNames([item], { type: 'language' }).of(item) ?? item}
                     </MenuItem>
                   ))}
-                </Select>
-              </FormControl>
+                </Menu>
+              </>
             ) : undefined}
             <ColorSchemeToggle scheme={colorScheme} onToggle={onToggleColorScheme} />
           </Stack>
