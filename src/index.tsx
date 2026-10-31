@@ -15,8 +15,7 @@ import {
 import {
   AppBar,
   Box,
-  Button,
-  Chip,
+  ButtonBase,
   Collapse,
   Container,
   CssBaseline,
@@ -420,29 +419,35 @@ function ThemeApp({
                 >
                   <SearchIcon />
                 </IconButton>
-                <Button
-                  variant='outlined'
-                  size='small'
-                  startIcon={<SearchIcon fontSize='small' />}
+                <ButtonBase
                   onClick={() => setSearchOpened(true)}
-                  sx={{
-                    display: { xs: 'none', sm: 'inline-flex' },
-                    justifyContent: 'space-between',
-                    width: { sm: 180, md: 250 },
-                    textTransform: 'none',
-                    fontWeight: 400,
-                    color: 'text.secondary',
-                  }}
                   aria-label={`${t('search')} ${getSearchShortcut()}`}
+                  aria-haspopup='dialog'
+                  sx={{
+                    display: { xs: 'none', sm: 'flex' },
+                    alignItems: 'center',
+                    gap: 1,
+                    width: { sm: 200, md: 280 },
+                    height: 40,
+                    px: 2,
+                    backgroundColor: 'action.hover',
+                    color: 'text.secondary',
+                    '&:hover': { backgroundColor: 'action.selected' },
+                    '&:focus-visible': {
+                      outline: '2px solid',
+                      outlineColor: 'primary.main',
+                      outlineOffset: 2,
+                    },
+                  }}
                 >
-                  <Typography variant='body2'>{t('search')}</Typography>
-                  <Chip
-                    label={getSearchShortcut()}
-                    size='small'
-                    variant='outlined'
-                    sx={{ height: 20, fontSize: 11 }}
-                  />
-                </Button>
+                  <SearchIcon fontSize='small' />
+                  <Typography variant='body2' sx={{ flexGrow: 1, textAlign: 'start' }}>
+                    {t('search')}
+                  </Typography>
+                  <Typography variant='caption' sx={{ whiteSpace: 'nowrap' }}>
+                    {getSearchShortcut()}
+                  </Typography>
+                </ButtonBase>
               </>
             ) : undefined}
             {projectLinks.github ? (
@@ -614,10 +619,6 @@ function SearchDialog({ open, search, onNavigate, onClose }: SearchDialogProps):
   const inputRef = useRef<HTMLInputElement>(null);
   const results = useMemo(() => search(query).slice(0, 8), [search, query]);
 
-  useEffect(() => {
-    if (open) inputRef.current?.focus();
-  }, [open]);
-
   function handleClose() {
     setQuery('');
     setActiveIndex(0);
@@ -645,7 +646,14 @@ function SearchDialog({ open, search, onNavigate, onClose }: SearchDialogProps):
   }
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth='sm' fullWidth aria-label={t('search')}>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth='sm'
+      fullWidth
+      aria-label={t('search')}
+      TransitionProps={{ onEntered: () => inputRef.current?.focus() }}
+    >
       <DialogTitle sx={{ pb: 1 }}>
         <TextField
           inputRef={inputRef}
