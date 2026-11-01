@@ -601,6 +601,7 @@ function ThemeApp({
               gap: 3,
               maxWidth: 1440,
               mx: 'auto',
+              pl: { lg: 3 },
             }}
           >
             <Box sx={{ flexGrow: 1, minWidth: 0 }}>
@@ -622,7 +623,7 @@ function ThemeApp({
             <Box
               component='aside'
               aria-hidden={tocHeadings.length > 0 ? undefined : true}
-              sx={{ display: { xs: 'none', lg: 'block' }, width: 240, flexShrink: 0, pr: 3 }}
+              sx={{ display: { xs: 'none', lg: 'block' }, width: 280, flexShrink: 0, pr: 3 }}
             >
               <Box
                 sx={{
