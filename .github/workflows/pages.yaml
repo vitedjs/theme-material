@@ -21,6 +21,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           path: theme-material
+          submodules: true
       # @vited/cli and @vited/core are linked from sibling directories
       - uses: actions/checkout@v6
         with:

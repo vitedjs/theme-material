@@ -1,0 +1,3 @@
+[submodule "docs/sample"]
+	path = docs/sample
+	url = https://github.com/vitedjs/sample.git
