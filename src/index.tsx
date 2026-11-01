@@ -12,6 +12,7 @@ import {
   LightMode as LightModeIcon,
   Menu as MenuIcon,
   Search as SearchIcon,
+  Toc as TocIcon,
 } from '@mui/icons-material';
 import {
   AppBar,
@@ -26,6 +27,8 @@ import {
   DialogTitle,
   Divider,
   Drawer,
+  Fab,
+  GlobalStyles,
   IconButton,
   InputAdornment,
   List,
@@ -53,7 +56,16 @@ import React, {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import { Children, isValidElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Children,
+  Fragment,
+  isValidElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import { createHighlighter, type BundledLanguage } from 'shiki';
 import { Link, Router, useLocation } from 'wouter';
@@ -61,6 +73,7 @@ import { Link, Router, useLocation } from 'wouter';
 import { themeI18n } from './i18n';
 import { getProjectLinks } from './project-links';
 import { createPageSearch, type SearchDocument } from './search';
+import { collectTocHeadings, useActiveHeading, type TocHeading } from './toc';
 
 const highlightLanguages: BundledLanguage[] = [
   'bash',
@@ -272,8 +285,16 @@ function ThemeApp({
   const Content = route ? pages[route.page].component : undefined;
   const { t, i18n } = useTranslation();
   const [mobileOpened, setMobileOpened] = useState(false);
+  const [tocOpened, setTocOpened] = useState(false);
   const [searchOpened, setSearchOpened] = useState(false);
   const [languageMenu, setLanguageMenu] = useState<HTMLElement>();
+  const [tocHeadings, setTocHeadings] = useState<TocHeading[]>([]);
+  const activeHeadingId = useActiveHeading(tocHeadings);
+  // Collect the outline when a page mounts; the keyed wrapper remounts on navigation.
+  const attachContent = useCallback((element: HTMLDivElement | null) => {
+    setTocHeadings(element ? collectTocHeadings(element) : []);
+    if (element) setTocOpened(false);
+  }, []);
   const projectLinks = useMemo(() => getProjectLinks(packageJSON), [packageJSON]);
   const navigationPages = useMemo(
     () => pages.filter((item) => item.locale === locale),
@@ -374,6 +395,25 @@ function ThemeApp({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <CssBaseline />
+      <GlobalStyles
+        styles={{
+          '.vited-material-content :is(h1, h2, h3, h4, h5, h6)': { scrollMarginTop: '80px' },
+          '.vited-heading-anchor': {
+            marginInlineStart: '0.35em',
+            color: 'inherit',
+            textDecoration: 'none',
+            opacity: 0,
+            transition: 'opacity 0.15s ease-in-out',
+          },
+          '.vited-material-content :is(h1, h2, h3, h4, h5, h6):hover .vited-heading-anchor, .vited-heading-anchor:focus-visible':
+            {
+              opacity: 0.6,
+            },
+          '@media (hover: none)': {
+            '.vited-heading-anchor': { opacity: 0.6 },
+          },
+        }}
+      />
       <AppBar position='sticky' color='default' elevation={1}>
         <Toolbar sx={{ gap: { xs: 0.5, sm: 1 }, flexWrap: 'nowrap' }}>
           {showNavigation ? (
@@ -555,15 +595,63 @@ function ThemeApp({
         ) : undefined}
 
         <Box component='main' sx={{ flexGrow: 1, minWidth: 0 }}>
-          <Container maxWidth='lg' sx={{ py: 3 }}>
-            {Content ? (
-              <Box className='vited-material-content' onClick={handleContentClick}>
-                <Content components={markdownComponents} />
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 3,
+              maxWidth: 1440,
+              mx: 'auto',
+            }}
+          >
+            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+              <Container maxWidth='lg' sx={{ py: 3 }}>
+                {Content ? (
+                  <Box
+                    className='vited-material-content'
+                    onClick={handleContentClick}
+                    key={pathname}
+                    ref={attachContent}
+                  >
+                    <Content components={markdownComponents} />
+                  </Box>
+                ) : (
+                  <Typography color='text.secondary'>{t('noDocuments')}</Typography>
+                )}
+              </Container>
+            </Box>
+            <Box
+              component='aside'
+              aria-hidden={tocHeadings.length > 0 ? undefined : true}
+              sx={{ display: { xs: 'none', lg: 'block' }, width: 240, flexShrink: 0, pr: 3 }}
+            >
+              <Box
+                sx={{
+                  position: 'sticky',
+                  top: 88,
+                  maxHeight: 'calc(100vh - 104px)',
+                  overflowY: 'auto',
+                  py: 3,
+                }}
+              >
+                {tocHeadings.length > 0 ? (
+                  <>
+                    <Typography
+                      variant='overline'
+                      color='text.secondary'
+                      sx={{ display: 'block', mb: 1 }}
+                    >
+                      {t('tableOfContents')}
+                    </Typography>
+                    <TocTree
+                      headings={tocHeadings}
+                      activeId={activeHeadingId}
+                      ariaLabel={t('tableOfContents')}
+                    />
+                  </>
+                ) : undefined}
               </Box>
-            ) : (
-              <Typography color='text.secondary'>{t('noDocuments')}</Typography>
-            )}
-          </Container>
+            </Box>
+          </Box>
         </Box>
       </Box>
 
@@ -579,6 +667,49 @@ function ThemeApp({
         </Drawer>
       ) : undefined}
 
+      {tocHeadings.length > 0 ? (
+        <>
+          <Fab
+            color='primary'
+            aria-label={tocOpened ? t('closeTableOfContents') : t('openTableOfContents')}
+            aria-expanded={tocOpened}
+            onClick={() => setTocOpened((opened) => !opened)}
+            sx={{
+              position: 'fixed',
+              right: 16,
+              bottom: 16,
+              display: { xs: 'flex', lg: 'none' },
+              zIndex: (theme) => theme.zIndex.drawer - 1,
+            }}
+          >
+            <TocIcon />
+          </Fab>
+          <Drawer
+            variant='temporary'
+            anchor='right'
+            open={tocOpened}
+            onClose={() => setTocOpened(false)}
+            sx={{ display: { xs: 'block', lg: 'none' }, '& .MuiDrawer-paper': { width: 300 } }}
+          >
+            <Box sx={{ p: 2 }}>
+              <Typography
+                variant='overline'
+                color='text.secondary'
+                sx={{ display: 'block', mb: 1 }}
+              >
+                {t('tableOfContents')}
+              </Typography>
+              <TocTree
+                headings={tocHeadings}
+                activeId={activeHeadingId}
+                ariaLabel={t('tableOfContents')}
+                onNavigate={() => setTocOpened(false)}
+              />
+            </Box>
+          </Drawer>
+        </>
+      ) : undefined}
+
       {searchIndex.length > 0 ? (
         <SearchDialog
           open={searchOpened}
@@ -591,6 +722,64 @@ function ThemeApp({
         />
       ) : undefined}
     </Box>
+  );
+}
+
+interface TocTreeProps {
+  headings: TocHeading[];
+  activeId?: string;
+  ariaLabel: string;
+  onNavigate?: () => void;
+  depth?: number;
+}
+
+function TocTree({
+  headings,
+  activeId,
+  ariaLabel,
+  onNavigate,
+  depth = 0,
+}: TocTreeProps): ReactElement {
+  return (
+    <List
+      component={depth === 0 ? 'nav' : 'div'}
+      aria-label={depth === 0 ? ariaLabel : undefined}
+      dense
+      disablePadding
+    >
+      {headings.map((heading) => (
+        <Fragment key={heading.id}>
+          <ListItemButton
+            component='a'
+            href={`#${heading.id}`}
+            selected={heading.id === activeId}
+            onClick={onNavigate}
+            sx={{
+              py: 0.25,
+              pl: 1.5 + (heading.level - 2) * 1.5,
+              pr: 1,
+              borderLeft: 2,
+              borderColor: heading.id === activeId ? 'primary.main' : 'transparent',
+              borderRadius: 0,
+            }}
+          >
+            <ListItemText
+              primary={heading.text}
+              primaryTypographyProps={{ variant: 'body2', noWrap: true }}
+            />
+          </ListItemButton>
+          {heading.children.length > 0 ? (
+            <TocTree
+              headings={heading.children}
+              activeId={activeId}
+              ariaLabel={ariaLabel}
+              onNavigate={onNavigate}
+              depth={depth + 1}
+            />
+          ) : undefined}
+        </Fragment>
+      ))}
+    </List>
   );
 }
 

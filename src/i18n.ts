@@ -12,6 +12,9 @@ void themeI18n.use(initReactI18next).init({
       translation: {
         language: 'Language',
         navigation: 'Navigation',
+        tableOfContents: 'On this page',
+        openTableOfContents: 'Open table of contents',
+        closeTableOfContents: 'Close table of contents',
         noDocuments: 'No documents were found in the configured docs directory.',
         openNavigation: 'Open navigation',
         closeNavigation: 'Close navigation',
@@ -31,6 +34,9 @@ void themeI18n.use(initReactI18next).init({
       translation: {
         language: '语言',
         navigation: '导航',
+        tableOfContents: '本页目录',
+        openTableOfContents: '打开目录',
+        closeTableOfContents: '关闭目录',
         noDocuments: '在配置的文档目录中没有找到文档。',
         openNavigation: '打开导航',
         closeNavigation: '关闭导航',
