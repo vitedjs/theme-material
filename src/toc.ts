@@ -75,19 +75,19 @@ export function useActiveHeading(headings: TocHeading[]): string | undefined {
         if (element.getBoundingClientRect().top > headerOffset) break;
         current = element.id;
       }
-      const root = globalThis.document.documentElement;
-      const atBottom = globalThis.scrollY + globalThis.innerHeight >= root.scrollHeight - 2;
+      const root = document.documentElement;
+      const atBottom = scrollY + innerHeight >= root.scrollHeight - 2;
       const next = atBottom ? (elements.at(-1)?.id ?? current) : current;
       setActiveId((previous) => (previous === next ? previous : next));
     }
 
-    const frame = globalThis.requestAnimationFrame(update);
-    globalThis.addEventListener('scroll', update, { passive: true });
-    globalThis.addEventListener('resize', update);
+    const frame = requestAnimationFrame(update);
+    addEventListener('scroll', update, { passive: true });
+    addEventListener('resize', update);
     return () => {
-      globalThis.cancelAnimationFrame(frame);
-      globalThis.removeEventListener('scroll', update);
-      globalThis.removeEventListener('resize', update);
+      cancelAnimationFrame(frame);
+      removeEventListener('scroll', update);
+      removeEventListener('resize', update);
     };
   }, [elements]);
 

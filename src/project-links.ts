@@ -26,7 +26,7 @@ function getGitHubRepositoryUrl(repository: unknown): string | undefined {
   if (ssh) normalized = `https://github.com/${ssh[1]}`;
 
   try {
-    const url = new globalThis.URL(normalized);
+    const url = new URL(normalized);
     if (url.protocol !== 'https:' && url.protocol !== 'http:') return undefined;
     if (url.hostname.toLowerCase() !== 'github.com') return undefined;
     const [owner, repositoryName] = url.pathname.split('/').filter(Boolean);
@@ -55,7 +55,7 @@ function getFundingUrl(funding: unknown): string | undefined {
   if (!value) return undefined;
 
   try {
-    const url = new globalThis.URL(value);
+    const url = new URL(value);
     return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : undefined;
   } catch {
     return undefined;

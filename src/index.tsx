@@ -173,12 +173,14 @@ export interface VitedThemeProps {
 type ColorScheme = 'light' | 'dark';
 
 function getSystemColorScheme(): ColorScheme {
-  return globalThis.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light';
 }
 
 function readColorSchemePreference(): ColorScheme | 'auto' {
   try {
-    const stored = globalThis.localStorage?.getItem(colorSchemeStorageKey);
+    const stored = localStorage?.getItem(colorSchemeStorageKey);
     return stored === 'light' || stored === 'dark' ? stored : 'auto';
   } catch {
     return 'auto';
@@ -191,7 +193,7 @@ function useColorScheme(): [ColorScheme, () => void] {
   const [system, setSystem] = useState<ColorScheme>(getSystemColorScheme);
 
   useEffect(() => {
-    const media = globalThis.matchMedia('(prefers-color-scheme: dark)');
+    const media = matchMedia('(prefers-color-scheme: dark)');
     const onChange = () => setSystem(media.matches ? 'dark' : 'light');
     media.addEventListener('change', onChange);
     return () => media.removeEventListener('change', onChange);
@@ -202,7 +204,7 @@ function useColorScheme(): [ColorScheme, () => void] {
   const toggle = useCallback(() => {
     const next = scheme === 'dark' ? 'light' : 'dark';
     try {
-      globalThis.localStorage?.setItem(colorSchemeStorageKey, next);
+      localStorage?.setItem(colorSchemeStorageKey, next);
     } catch {
       // Storage may be unavailable, e.g. in private browsing.
     }
@@ -327,19 +329,19 @@ function ThemeApp({
   );
 
   useEffect(() => {
-    globalThis.document.documentElement.lang = locale;
+    document.documentElement.lang = locale;
     void i18n.changeLanguage(locale);
   }, [i18n, locale]);
 
   useEffect(() => {
-    function onKeyDown(event: globalThis.KeyboardEvent) {
+    function onKeyDown(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
         setSearchOpened(true);
       }
     }
-    globalThis.document.addEventListener('keydown', onKeyDown);
-    return () => globalThis.document.removeEventListener('keydown', onKeyDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
   }, []);
 
   function changeLocale(nextLocale: string) {
@@ -348,7 +350,7 @@ function ThemeApp({
       routes.find((item) => item.path === route?.path && item.locale === nextLocale) ??
       routes.find((item) => item.locale === nextLocale);
     if (!nextRoute) return;
-    const url = new globalThis.URL(globalThis.location.href);
+    const url = new URL(location.href);
     url.searchParams.delete('lang');
     navigate(`${nextRoute.pathname}${url.search}${url.hash}`);
   }
@@ -368,8 +370,8 @@ function ThemeApp({
     if (!anchor || anchor.target === '_blank' || anchor.hasAttribute('download')) return;
     const href = anchor.getAttribute('href');
     if (!href || href.startsWith('#')) return;
-    const url = new globalThis.URL(anchor.href, globalThis.location.href);
-    if (url.origin !== globalThis.location.origin) return;
+    const url = new URL(anchor.href, location.href);
+    if (url.origin !== location.origin) return;
     const routePath = stripBasePath(url.pathname, basePath);
     if (routeIndex[routePath] === undefined) return;
     event.preventDefault();
@@ -1154,8 +1156,7 @@ function NavTreeItem({
 }
 
 function getSearchShortcut(): string {
-  return globalThis.navigator !== undefined &&
-    /Mac|iPhone|iPad|iPod/.test(globalThis.navigator.platform)
+  return typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)
     ? '⌘K'
     : 'Ctrl+K';
 }
@@ -1285,8 +1286,8 @@ function CopyButton({ code }: { code: string }): ReactElement {
 
   useEffect(() => {
     if (!copied) return;
-    const timer = globalThis.setTimeout(() => setCopied(false), 2000);
-    return () => globalThis.clearTimeout(timer);
+    const timer = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timer);
   }, [copied]);
 
   return (
@@ -1295,7 +1296,9 @@ function CopyButton({ code }: { code: string }): ReactElement {
         size='small'
         aria-label={copied ? t('copied') : t('copy')}
         onClick={() => {
-          void globalThis.navigator?.clipboard?.writeText(code).catch(() => {});
+          if (typeof navigator !== 'undefined') {
+            void navigator.clipboard?.writeText(code).catch(() => {});
+          }
           setCopied(true);
         }}
         sx={{
