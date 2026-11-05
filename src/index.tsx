@@ -1115,25 +1115,28 @@ function NavTreeItem({
   const [opened, setOpened] = useState(defaultOpened);
   const hasChildren = Children.count(children) > 0;
   const toggle = hasChildren ? () => setOpened((value) => !value) : undefined;
+  const handleClick = () => {
+    toggle?.();
+    if (!hasChildren) onNavigate();
+  };
 
-  const button = (
-    <ListItemButton
-      selected={active}
-      onClick={() => {
-        toggle?.();
-        onNavigate();
-      }}
-      sx={{
-        py: 0.75,
-        borderRadius: 1,
-        mx: 1,
-        width: 'auto',
-        '&.Mui-selected': {
-          fontWeight: 600,
-          backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.12),
-        },
-      }}
-    >
+  const buttonProps = {
+    selected: active,
+    onClick: handleClick,
+    'aria-expanded': hasChildren ? opened : undefined,
+    sx: {
+      py: 0.75,
+      borderRadius: 1,
+      mx: 1,
+      width: 'auto',
+      '&.Mui-selected': {
+        fontWeight: 600,
+        backgroundColor: (theme: Theme) => alpha(theme.palette.primary.main, 0.12),
+      },
+    },
+  };
+  const buttonContent = (
+    <>
       <ListItemText primary={label} primaryTypographyProps={{ noWrap: true }} />
       {hasChildren ? (
         opened ? (
@@ -1142,41 +1145,37 @@ function NavTreeItem({
           <ExpandMoreIcon fontSize='small' />
         )
       ) : undefined}
-    </ListItemButton>
+    </>
   );
 
   let control: ReactElement;
   if (to) {
     control = (
-      <Link to={to} asChild>
-        {button}
-      </Link>
+      <ListItemButton component={Link} to={to} {...buttonProps}>
+        {buttonContent}
+      </ListItemButton>
     );
   } else if (href) {
     control = (
-      <Box
-        component='a'
-        href={href}
-        sx={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
-      >
-        {button}
-      </Box>
+      <ListItemButton component='a' href={href} {...buttonProps}>
+        {buttonContent}
+      </ListItemButton>
     );
   } else {
-    control = button;
+    control = <ListItemButton {...buttonProps}>{buttonContent}</ListItemButton>;
   }
 
   return (
-    <>
-      <ListItem disablePadding>{control}</ListItem>
+    <ListItem disablePadding sx={{ display: 'block' }}>
+      {control}
       {hasChildren ? (
         <Collapse in={opened} timeout='auto'>
-          <List component='div' disablePadding sx={{ pl: 3 }}>
+          <List component='ul' disablePadding sx={{ pl: 3 }}>
             {children}
           </List>
         </Collapse>
       ) : undefined}
-    </>
+    </ListItem>
   );
 }
 
