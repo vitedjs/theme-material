@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## 0.1.2 - 2026-11-05
+
+### Added
+
+- Show `new` and `deprecated` badges from page frontmatter in the generated sidebar.
+
+### Fixed
+
+- Allow sidebar parent items to expand their nested pages while navigating.
+
 ## 0.1.1 - 2026-11-02
 
 ### Added
