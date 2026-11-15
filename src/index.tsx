@@ -71,6 +71,7 @@ import { I18nextProvider, useTranslation } from 'react-i18next';
 import { createHighlighter, type BundledLanguage } from 'shiki';
 import { Link, Router, useLocation } from 'wouter';
 
+import { formatDocumentTitle } from './document-title';
 import { themeI18n } from './i18n';
 import { getProjectLinks } from './project-links';
 import { createPageSearch, type SearchDocument } from './search';
@@ -286,6 +287,7 @@ function ThemeApp({
   const route = routes[routeIndex[pathname] ?? -1];
   const locale = route?.locale ?? locales[0] ?? 'en';
   const Content = route ? pages[route.page].component : undefined;
+  const pageTitle = route ? pages[route.page].title : '';
   const { t, i18n } = useTranslation();
   const [mobileOpened, setMobileOpened] = useState(false);
   const [tocOpened, setTocOpened] = useState(false);
@@ -333,6 +335,10 @@ function ThemeApp({
     document.documentElement.lang = locale;
     void i18n.changeLanguage(locale);
   }, [i18n, locale]);
+
+  useEffect(() => {
+    document.title = formatDocumentTitle(pageTitle, title, packageJSON);
+  }, [packageJSON, pageTitle, title]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
