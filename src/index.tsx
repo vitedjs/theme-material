@@ -1231,7 +1231,8 @@ interface CodeBlockProps {
 }
 
 function CodeBlock({ code, language }: CodeBlockProps): ReactElement {
-  const theme = useTheme();
+  const { palette } = useTheme();
+  const shikiTheme = palette.mode === 'dark' ? 'github-dark' : 'github-light';
   const [html, setHtml] = useState<string>();
 
   useEffect(() => {
@@ -1246,7 +1247,7 @@ function CodeBlock({ code, language }: CodeBlockProps): ReactElement {
         setHtml(
           highlighter.codeToHtml(code, {
             lang,
-            themes: { light: 'github-light', dark: 'github-dark' },
+            theme: shikiTheme,
           }),
         );
       })
@@ -1256,7 +1257,7 @@ function CodeBlock({ code, language }: CodeBlockProps): ReactElement {
     return () => {
       cancelled = true;
     };
-  }, [code, language]);
+  }, [code, language, shikiTheme]);
 
   return (
     <Box
@@ -1273,23 +1274,6 @@ function CodeBlock({ code, language }: CodeBlockProps): ReactElement {
           overflowX: 'auto',
           fontSize: '0.875em',
         },
-        '& .shiki, & .shiki span': {
-          color: 'var(--shiki-light)',
-          fontStyle: 'var(--shiki-light-font-style)',
-          fontWeight: 'var(--shiki-light-font-weight)',
-          textDecoration: 'var(--shiki-light-text-decoration)',
-        },
-        ...(theme.palette.mode === 'dark'
-          ? {
-              '& .shiki, & .shiki span': {
-                color: 'var(--shiki-dark) !important',
-                backgroundColor: 'var(--shiki-dark-bg) !important',
-                fontStyle: 'var(--shiki-dark-font-style) !important',
-                fontWeight: 'var(--shiki-dark-font-weight) !important',
-                textDecoration: 'var(--shiki-dark-text-decoration) !important',
-              },
-            }
-          : {}),
       }}
     >
       <CopyButton code={code} />
