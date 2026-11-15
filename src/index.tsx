@@ -68,6 +68,7 @@ import {
   useState,
 } from 'react';
 import { I18nextProvider, useTranslation } from 'react-i18next';
+import { ScrollRestore } from 'react-scroll-restore';
 import { createHighlighter, type BundledLanguage } from 'shiki';
 import { Link, Router, useLocation } from 'wouter';
 
@@ -833,6 +834,7 @@ export function VitedTheme(props: VitedThemeProps): ReactElement {
     <ThemeProvider theme={theme}>
       <I18nextProvider i18n={themeI18n}>
         <Router base={props.basePath ?? ''}>
+          <ScrollRestore />
           <ThemeApp {...props} colorScheme={mode} onToggleColorScheme={toggleMode} />
         </Router>
       </I18nextProvider>
