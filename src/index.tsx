@@ -73,6 +73,7 @@ import { Link, Router, useLocation } from 'wouter';
 
 import { formatDocumentTitle } from './document-title';
 import { themeI18n } from './i18n';
+import { formatPackageVersion } from './package-version';
 import { getProjectLinks } from './project-links';
 import { createPageSearch, type SearchDocument } from './search';
 import { collectTocHeadings, useActiveHeading, type TocHeading } from './toc';
@@ -301,6 +302,7 @@ function ThemeApp({
     if (element) setTocOpened(false);
   }, []);
   const projectLinks = useMemo(() => getProjectLinks(packageJSON), [packageJSON]);
+  const version = formatPackageVersion(packageJSON);
   const navigationPages = useMemo(
     () => pages.filter((item) => item.locale === locale),
     [pages, locale],
@@ -442,6 +444,17 @@ function ThemeApp({
           <Stack spacing={0} sx={{ minWidth: 0, flex: '0 1 auto', overflow: 'hidden' }}>
             <Typography variant='subtitle1' fontWeight={700} noWrap>
               {title || 'Documentation'}
+              {version ? (
+                <Typography
+                  component='span'
+                  variant='caption'
+                  color='text.secondary'
+                  sx={{ fontWeight: 400 }}
+                >
+                  {' '}
+                  {version}
+                </Typography>
+              ) : undefined}
             </Typography>
             {description ? (
               <Typography

@@ -25,7 +25,8 @@ export default defineConfig({
 ## Title, description and favicon
 
 `title` and `description` appear in the app bar, next to the favicon that Vited
-discovers from your docs directory.
+discovers from your docs directory. The `version` from your project's
+`package.json` is shown in small, muted text after the title.
 
 ## Locales
 

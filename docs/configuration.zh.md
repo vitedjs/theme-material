@@ -23,7 +23,8 @@ export default defineConfig({
 
 ## 标题、描述和网站图标
 
-`title` 和 `description` 显示在应用栏中，旁边是 Vited 从文档目录中发现的网站图标。
+`title` 和 `description` 显示在应用栏中，旁边是 Vited 从文档目录中发现的网站图标。项目
+`package.json` 中的 `version` 会以小号弱化文字显示在标题后面。
 
 ## 多语言
 
