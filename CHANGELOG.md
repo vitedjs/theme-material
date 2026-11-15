@@ -1,6 +1,18 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 - 2026-11-15
+
+### Added
+
+- Set the browser tab title for each page from the page title and the site title.
+
+### Changed
+
+- Require `@vited/core` 0.5 or newer as a peer dependency.
+
+### Fixed
+
+- Highlight code blocks with the Shiki theme that matches the active color scheme, so code colors follow light and dark mode.
 
 ## 0.1.2 - 2026-11-05
 
