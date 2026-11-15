@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.2 - 2026-11-15
+
+### Fixed
+
+- Restore the scroll position on navigation with `react-scroll-restore` 0.1.1: hash targets stay below the sticky header and pages without a hash return to the top.
+
 ## 0.3.1 - 2026-11-15
 
 ### Changed
