@@ -1,6 +1,6 @@
 {
   "name": "@vited/theme-material",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Material UI React theme for Vited documentation sites",
   "keywords": [
     "documentation",
@@ -84,7 +84,7 @@
     "vitest": "^5.0.5"
   },
   "peerDependencies": {
-    "@vited/core": "^0.5.0",
+    "@vited/core": "^0.6.0",
     "react": "^19.2.0"
   },
   "lint-staged": {

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1 - 2026-11-15
+
+### Changed
+
+- Require `@vited/core` 0.6 or newer as a peer dependency.
+
 ## 0.3.0 - 2026-11-15
 
 ### Added
