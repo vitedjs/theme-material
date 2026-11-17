@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.3 - 2026-11-17
+
+### Fixed
+
+- Restore the scroll position on every navigation with `react-scroll-restore` 0.2.0 by mounting the restore boundary in the page area.
+
 ## 0.3.2 - 2026-11-15
 
 ### Fixed
