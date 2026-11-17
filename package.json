@@ -60,7 +60,7 @@
     "html-react-parser": "^6.1.9",
     "i18next": "^26.5.11",
     "react-i18next": "^17.1.9",
-    "react-scroll-restore": "^0.1.1",
+    "react-scroll-restore": "^0.2.0",
     "shiki": "^4.5.0",
     "wouter": "^3.13.0"
   },

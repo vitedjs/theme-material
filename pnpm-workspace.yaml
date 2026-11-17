@@ -1,3 +1,3 @@
 minimumReleaseAgeExclude:
   - oxlint-config-recommended@1.2.1
-  - react-scroll-restore@0.1.0 || 0.1.1
+  - react-scroll-restore@0.2.0

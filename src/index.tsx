@@ -629,6 +629,7 @@ function ThemeApp({
           >
             <Box sx={{ flexGrow: 1, minWidth: 0 }}>
               <Container maxWidth='lg' sx={{ py: 3 }}>
+                <ScrollRestore key={pathname} />
                 {Content ? (
                   <Box
                     className='vited-material-content'
@@ -834,7 +835,6 @@ export function VitedTheme(props: VitedThemeProps): ReactElement {
     <ThemeProvider theme={theme}>
       <I18nextProvider i18n={themeI18n}>
         <Router base={props.basePath ?? ''}>
-          <ScrollRestore />
           <ThemeApp {...props} colorScheme={mode} onToggleColorScheme={toggleMode} />
         </Router>
       </I18nextProvider>
